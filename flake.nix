@@ -83,6 +83,7 @@
             python3
           ];
 
+          # TODO: this is a bit hacky, I bet I could apply a patch here instead
           buildPhase = ''
             # Make the output directories
             mkdir -p $out/{bin,data}
