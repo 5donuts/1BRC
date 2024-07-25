@@ -1,0 +1,11 @@
+[package]
+name = "onebrc"
+description = "My take on the One Billion Row Challenge"
+version = "0.1.0"
+authors = ["Charles German <5donuts@pm.me>"]
+edition = "2021"
+homepage = "https://1brc.dev"
+publish = false
+license = "GPL-3.0-or-later"
+
+[dependencies]
