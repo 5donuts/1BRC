@@ -63,8 +63,9 @@ trait ChallengeRunner {
     ///
     /// # Returns
     /// A [`Duration`] indicatating how long it took to solve the challenge,
-    /// not including the amount of time it took to print the output.
-    fn run(input: &Path) -> Duration;
+    /// not including the amount of time it took to print the output, or some
+    /// error encountered while attempting to solve the challenge.
+    fn run(input: &Path) -> Result<Duration, Box<dyn std::error::Error>>;
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -77,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     use Runner::*;
     let duration = match runner {
         Naive => naive::Runner::run(input),
-    };
+    }?;
 
     // Display results
     let seconds = duration.as_secs();
