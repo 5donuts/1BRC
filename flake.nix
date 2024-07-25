@@ -62,6 +62,46 @@
         default = (crane.mkLib pkgs).buildPackage {
           src = ./.;
         };
+
+        # Run the create_measurements.py script with `nix run .#create-measurements -- <args>`
+        create-measurements = pkgs.stdenv.mkDerivation {
+          name = "create-measurements";
+
+          # See: https://serverfault.com/a/1049157
+          src = pkgs.fetchFromGitHub {
+            owner = "gunnarmorling";
+            repo = "onebrc";
+            rev = "db064194be375edc02d6dbcd21268ad40f7e2869";
+            sha256 = "0s6izfdc39jgjjynqsihaj0h3dgrdcnls9l8x1086685w3l8dxsa";
+          };
+
+          nativeBuildInputs = with pkgs; [
+            gnused
+          ];
+
+          propagatedBuildInputs = with pkgs; [
+            python3
+          ];
+
+          buildPhase = ''
+            # Make the output directories
+            mkdir -p $out/{bin,data}
+
+            # Update the path to weather_stations.csv to the location in the Nix store we copy that file
+            sed -i "s#../../../data/weather_stations.csv#$out/data/weather_stations.csv#g" src/main/python/create_measurements.py
+
+            # Update the path to measurements.txt to be placed in the CWD instead of a hardcoded path
+            sed -i 's#"../../../data/measurements.txt"#"{}/measurements.txt".format(os.getcwd())#g' src/main/python/create_measurements.py
+
+            # Finally, update the output about "test data written to ..." to be the new location
+            sed -i 's#1brc/data/measurements.txt"#{}/measurements.txt".format(os.getcwd())#g' src/main/python/create_measurements.py
+          '';
+
+          installPhase = ''
+            cp data/weather_stations.csv $out/data/
+            cp src/main/python/create_measurements.py $out/bin/create-measurements
+          '';
+        };
       });
   };
 }
