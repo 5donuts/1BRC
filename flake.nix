@@ -16,9 +16,18 @@
 {
   description = "My take on the 1 Billion Row Challenge";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs }:
+    # Nix library for building Cargo projects
+    # See: https://github.com/ipetkov/crane
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, crane, ... }:
   let
     # For details on this approach to supporting multiple architectures, see:
     # https://xeiaso.net/blog/nix-flakes-1-2022-02-21/
@@ -28,6 +37,7 @@
 
     rustOverrides = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml));
   in {
+    # Create a dev-shell with Rust utils installed
     # For details, see: https://nixos.wiki/wiki/Rust#Installation_via_rustup
     devShells = forAllSystems (system:
       let
@@ -41,6 +51,16 @@
           ];
 
           RUSTC_VERSION = rustOverrides.toolchain.channel;
+        };
+      });
+
+    packages = forAllSystems(system:
+      let
+        pkgs = nixpkgsFor.${system};
+      in {
+        # Make the binary available with `nix run . -- <args>`
+        default = (crane.mkLib pkgs).buildPackage {
+          src = ./.;
         };
       });
   };
