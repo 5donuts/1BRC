@@ -13,11 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, BufRead};
+use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::time::Instant;
-use std::collections::HashMap;
 
 use crate::helpers::*;
 
@@ -38,7 +38,7 @@ impl StationData {
             min: measurement,
             max: measurement,
             sum: measurement,
-            cnt: 1
+            cnt: 1,
         }
     }
 
@@ -85,7 +85,10 @@ impl ChallengeRunner for Runner {
         }
 
         // Build the alphabetically-sorted list of stations
-        let mut stations: Vec<StationInfo> = map.into_iter().map(|(key, val)| StationInfo::new(key, val.min, val.max, val.avg())).collect();
+        let mut stations: Vec<StationInfo> = map
+            .into_iter()
+            .map(|(key, val)| StationInfo::new(key, val.min, val.max, val.avg()))
+            .collect();
         stations.sort_unstable();
 
         // Compute the time it took to generate the list of sorted stations

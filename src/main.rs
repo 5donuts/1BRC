@@ -15,13 +15,13 @@
 
 use std::path::PathBuf;
 
-use serde::Serialize;
 use clap::Parser;
+use serde::Serialize;
 
 use helpers::ChallengeRunner;
 
-mod naive;
 mod helpers;
+mod naive;
 
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]

@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::time::Duration;
-use std::path::Path;
+use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
 use std::fmt::Display;
-use std::cmp::{PartialOrd, Ord, Eq, PartialEq};
+use std::path::Path;
+use std::time::Duration;
 
 /// A helper type to represent min/max/avg data for a station
 #[derive(Debug)]
@@ -28,25 +28,32 @@ impl StationInfo {
     }
 
     pub fn name(&self) -> &str {
-        &self.0.0
+        &self.0 .0
     }
 
     pub fn min(&self) -> f32 {
-        self.0.1
+        self.0 .1
     }
 
     pub fn max(&self) -> f32 {
-        self.0.2
+        self.0 .2
     }
 
     pub fn avg(&self) -> f32 {
-        self.0.3
+        self.0 .3
     }
 }
 
 impl Display for StationInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}={:.1}/{:.1}/{:.1}", self.name(), self.min(), self.avg(), self.max())
+        write!(
+            f,
+            "{}={:.1}/{:.1}/{:.1}",
+            self.name(),
+            self.min(),
+            self.avg(),
+            self.max()
+        )
     }
 }
 
@@ -67,7 +74,8 @@ impl PartialOrd for StationInfo {
 
 impl Ord for StationInfo {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).expect("Unable to unwrap StationInfo::partial_cmp")
+        self.partial_cmp(other)
+            .expect("Unable to unwrap StationInfo::partial_cmp")
     }
 }
 
