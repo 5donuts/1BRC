@@ -13,13 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::path::{Path, PathBuf};
-use std::time::Duration;
+use std::path::PathBuf;
 
 use serde::Serialize;
 use clap::Parser;
 
+use helpers::ChallengeRunner;
+
 mod naive;
+mod helpers;
 
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
@@ -54,20 +56,6 @@ struct Args {
     input: PathBuf,
 }
 
-/// A runner for the 1 Billion Row Challenge
-trait ChallengeRunner {
-    /// Solve the 1 Billion Row Challenge
-    ///
-    /// # Parameters
-    /// * `input` - [`Path`] to the file containing the challenge input
-    ///
-    /// # Returns
-    /// A [`Duration`] indicatating how long it took to solve the challenge,
-    /// not including the amount of time it took to print the output, or some
-    /// error encountered while attempting to solve the challenge.
-    fn run(input: &Path) -> Result<Duration, Box<dyn std::error::Error>>;
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Process arguments
     let args = Args::parse();
@@ -76,11 +64,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Do the thing
     use Runner::*;
-    let duration = match runner {
+    let (station_info, duration) = match runner {
         Naive => naive::Runner::run(input),
     }?;
 
-    // Display results
+    // Display the result
+    print!("{{");
+    for i in 0..station_info.len() {
+        print!("{}", station_info[i]);
+        if station_info.len() - 1 > 0 {
+            print!(", ");
+        }
+    }
+    println!("}}");
+
+    // Display the time it took to compute the results
     let seconds = duration.as_secs();
     let millis = duration.subsec_millis();
     let micros = duration.subsec_micros() - (millis * 1000);
