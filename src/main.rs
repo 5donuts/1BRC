@@ -29,7 +29,7 @@ enum Runner {
     /// Naive approach to the challenge
     ///
     /// Iterate through the input using a single thread to build min/max/avg data
-    /// for each station, without loading the entire input into memory.
+    /// for each station.
     #[default]
     Naive,
 }
@@ -68,15 +68,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Naive => naive::Runner::run(input),
     }?;
 
-    // Display the result
+    // Display the results with wrapping '{ ... }' and ',' between each entry, but
+    // not following the last entry.
     print!("{{");
-    for i in 0..station_info.len() {
+    for i in 0..(station_info.len() - 1) {
         print!("{}", station_info[i]);
-        if station_info.len() - 1 > 0 {
-            print!(", ");
-        }
+        print!(", ");
     }
-    println!("}}");
+    println!("{}}}\n", station_info.iter().last().unwrap());
 
     // Display the time it took to compute the results
     let seconds = duration.as_secs();
