@@ -27,7 +27,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, crane, ... }:
+  outputs = { nixpkgs, crane, ... }:
   let
     # For details on this approach to supporting multiple architectures, see:
     # https://xeiaso.net/blog/nix-flakes-1-2022-02-21/
