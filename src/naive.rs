@@ -85,7 +85,7 @@ impl ChallengeRunner for Runner {
         }
 
         // Build the alphabetically-sorted list of stations
-        let mut stations: Vec<StationInfo> = map.into_iter().map(|(key, val)| StationInfo::new(key, val.min, val.max, val.sum / val.cnt as f32)).collect();
+        let mut stations: Vec<StationInfo> = map.into_iter().map(|(key, val)| StationInfo::new(key, val.min, val.max, val.avg())).collect();
         stations.sort_unstable();
 
         // Compute the time it took to generate the list of sorted stations
