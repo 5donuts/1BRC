@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufReader, BufRead};
 use std::path::Path;
 use std::time::Instant;
 use std::collections::HashMap;
@@ -32,6 +32,28 @@ struct StationData {
 }
 
 impl StationData {
+    /// Instantiate a new record of measurements for a station
+    fn new(measurement: f32) -> Self {
+        Self {
+            min: measurement,
+            max: measurement,
+            sum: measurement,
+            cnt: 1
+        }
+    }
+
+    /// Record an additional measurement for this station
+    fn push(&mut self, measurement: f32) {
+        if measurement < self.min {
+            self.min = measurement;
+        } else if measurement > self.max {
+            self.max = measurement;
+        }
+
+        self.sum += measurement;
+        self.cnt += 1;
+    }
+
     fn avg(&self) -> f32 {
         self.sum / self.cnt as f32
     }
@@ -43,23 +65,28 @@ impl ChallengeRunner for Runner {
     fn run(input: &Path) -> ChallengeResult {
         let start = Instant::now();
 
-        // A quick 'wc -L measurements.txt' suggests the longest line will be in the
-        // realm of 45 characters. So, make the buffer long enough to hold a good number
-        // of lines to reduce the number of I/O operations.
-        const BUFFER_SIZE: usize = std::mem::size_of::<char>() * 50000;
-        let mut buffer = [0; BUFFER_SIZE];
+        // Open the file with a BufReader to reduce the number of file I/O operations we're doing
+        // Then, go through each line in the file & parse out the station data, updating the map
+        // of stations as we go.
+        let f = File::open(input)?;
         let mut map: HashMap<String, StationData> = HashMap::new();
+        for line in BufReader::new(f).lines() {
+            let line = line?;
+            let mut parts = line.split(';');
+            let station = parts.next().unwrap();
+            let measurement = parts.next().unwrap().parse::<f32>()?;
 
-        let mut f = File::open(input)?;
-
-        let mut n = f.read(&mut buffer[..])?;
-        while n > 0 {
-            // TODO: actually do something with the data lol
-            n = f.read(&mut buffer[..])?;
+            if let Some(station_data) = map.get_mut(station) {
+                station_data.push(measurement);
+            } else {
+                let station_data = StationData::new(measurement);
+                map.insert(station.to_owned(), station_data);
+            }
         }
 
         // Build the alphabetically-sorted list of stations
-        let stations = Vec::new(); // TODO
+        let mut stations: Vec<StationInfo> = map.into_iter().map(|(key, val)| StationInfo::new(key, val.min, val.max, val.sum / val.cnt as f32)).collect();
+        stations.sort_unstable();
 
         // Compute the time it took to generate the list of sorted stations
         let stop = Instant::now();
