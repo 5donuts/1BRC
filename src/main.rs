@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use clap::Parser;
 use serde::Serialize;
@@ -54,15 +55,29 @@ struct Args {
     /// Path to the file containing the challenge input
     #[clap(value_parser)]
     input: PathBuf,
+
+    /// Benchmark the selected runner
+    ///
+    /// The runner is invoked five times sequentially with the fastest and slowest times discarded.
+    /// Then, the mean & standard deviation of runtimes is displayed.
+    #[clap(short, long, action)]
+    bench: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Process arguments
     let args = Args::parse();
-    let input = &args.input;
     let runner = args.runner;
+    let input = &args.input;
 
-    // Do the thing
+    if args.bench {
+        benchmark(runner, input)
+    } else {
+        run(runner, input)
+    }
+}
+
+/// Run the selected [`Runner`] against the provided input
+fn run(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Error>> {
     use Runner::*;
     let (station_info, duration) = match runner {
         Naive => naive::Runner::run(input),
@@ -76,12 +91,69 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         print!(", ");
     }
     println!("{}}}\n", station_info.iter().last().unwrap());
+    println!("Solved in {}", fmt_duration(&duration));
 
+    Ok(())
+}
+
+/// Benchmark the selected [`Runner`] using the provided input
+///
+/// The runner is invoked five times. The fastest and slowest times are discarded.
+/// Then, the mean and standard deviation of runs is calculated.
+///
+/// All times as well as the benchmark result are shown to the user.
+fn benchmark(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    // Collect the run results
+    let durations: Result<Vec<Duration>, _> = (1..=5)
+        .into_iter()
+        .map(|i| {
+            use Runner::*;
+            // Discard the station info b/c we only care about the time it took to compute
+            match runner {
+                Naive => naive::Runner::run(input),
+            }
+            .and_then(|(_, duration)| {
+                println!("Run {i}: {}", fmt_duration(&duration));
+                Ok(duration)
+            })
+        })
+        .collect();
+    let mut durations = durations?;
+    durations.sort();
+
+    // Drop the highest & lowest runs
+    let durations = &durations[1..4];
+
+    // Compute some basic stats
+    let duration_millis: Vec<_> = durations
+        .iter()
+        .map(|d| d.as_secs() * 1000 + d.subsec_millis() as u64)
+        .collect();
+    let mean =
+        duration_millis.iter().map(|&m| m as f64).sum::<f64>() / duration_millis.len() as f64;
+    let variance = duration_millis
+        .iter()
+        .map(|&m| (m as f64 - mean).powf(2.0))
+        .sum::<f64>()
+        / duration_millis.len() as f64;
+    let std_dev = variance.sqrt();
+
+    // Convert the stats back to durations & print the result
+    let mean = Duration::from_millis(mean.ceil() as u64);
+    let std_dev = Duration::from_millis(std_dev.ceil() as u64);
+
+    println!(
+        "\nMean: {} ± {}",
+        fmt_duration(&mean),
+        fmt_duration(&std_dev)
+    );
+    Ok(())
+}
+
+/// Helper function to format a [`Duration`] with a nice seconds/ms structure
+fn fmt_duration(duration: &Duration) -> String {
     // Display the time it took to compute the results
     let seconds = duration.as_secs();
     let millis = duration.subsec_millis();
-    let micros = duration.subsec_micros() - (millis * 1000);
-    println!("Solved in {seconds}s {millis:0>3}ms {micros:0>3}µs");
-
-    Ok(())
+    format!("{seconds}s {millis:0>3}ms")
 }
