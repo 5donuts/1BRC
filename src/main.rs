@@ -27,10 +27,7 @@ mod naive;
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
 enum Runner {
-    /// Naive approach to the challenge
-    ///
-    /// Iterate through the input using a single thread to build min/max/avg data
-    /// for each station.
+    /// Iterate through the input line-by-line to build min/max/avg data for each station
     #[default]
     Naive,
 }
