@@ -17,3 +17,14 @@ $ nix run . -- -r runner-name ./measurements.txt
 # For additional information, run:
 $ nix run . -- --help
 ```
+
+## Results
+
+Much like the official competition, results are taken by running each solution five times,
+discarding the highest & lowest results.
+This particular table of solutions was run on a system with an AMD Ryzen 7 2700X processor and
+16GiB of memory.
+
+| Runner                  | Runtime               | Notes                                                       |
+| ----------------------- | --------------------- | ----------------------------------------------------------- |
+| [Naive](./src/naive.rs) | 195s 179ms ± 6s 423ms | Basic implementation; iterate through the file line-by-line |
