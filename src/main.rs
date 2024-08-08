@@ -21,6 +21,7 @@ use serde::Serialize;
 
 use helpers::ChallengeRunner;
 
+mod cursor;
 mod helpers;
 mod naive;
 
@@ -28,8 +29,11 @@ mod naive;
 #[serde(rename_all = "kebab-case")]
 enum Runner {
     /// Iterate through the input line-by-line to build min/max/avg data for each station
-    #[default]
     Naive,
+
+    /// Read the file into memory in a few large chunks instead of many smaller I/O ops
+    #[default]
+    Cursor,
 }
 
 #[derive(Debug, Parser)]
@@ -78,6 +82,7 @@ fn run(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Error>> {
     use Runner::*;
     let (station_info, duration) = match runner {
         Naive => naive::Runner::run(input),
+        Cursor => cursor::Runner::run(input),
     }?;
 
     // Display the results with wrapping '{ ... }' and ',' between each entry, but
@@ -108,6 +113,7 @@ fn benchmark(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Err
             // Discard the station info b/c we only care about the time it took to compute
             match runner {
                 Naive => naive::Runner::run(input),
+                Cursor => cursor::Runner::run(input),
             }
             .and_then(|(_, duration)| {
                 println!("Run {i}: {}", fmt_duration(&duration));
