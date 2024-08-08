@@ -88,9 +88,8 @@ impl ChallengeRunner for Runner {
                     let end_idx = last_chunk_newline_idx(&buf);
 
                     // Move the cursor just past the last newline in the chunk so the next chunk
-                    // starts at the beginning of a line rather than partway through one. The '+ 1'
-                    // here is so we skip over the '\n' so the next chunk doesn't begin with a '\n'
-                    f.seek(SeekFrom::Current((end_idx + 1) as i64))?;
+                    // starts at the beginning of a line rather than partway through one.
+                    f.seek(SeekFrom::Current(end_idx as i64))?;
 
                     // Trim the buffer to not include the partial line
                     &buf[..end_idx]
