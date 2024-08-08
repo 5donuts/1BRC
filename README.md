@@ -24,7 +24,9 @@ Much like the official competition, results are taken by running each solution f
 discarding the highest & lowest results.
 This particular table of solutions was run on a system with an AMD Ryzen 7 2700X processor and
 16GiB of memory.
+Additionally, the 'delta' column represents the percentage change of a particular runner compared to the baseline.
 
-| Runner                  | Runtime               | Notes                                                       |
-| ----------------------- | --------------------- | ----------------------------------------------------------- |
-| [Naive](./src/naive.rs) | 195s 179ms ± 6s 423ms | Basic implementation; iterate through the file line-by-line |
+| Runner                    | Runtime               | Delta  | Notes                                                                               |
+| ------------------------- | --------------------- | ------ | ----------------------------------------------------------------------------------- |
+| [Naive](./src/naive.rs)   | 195s 179ms ± 6s 423ms | N/A    | Basic implementation; iterate through the file line-by-line                         |
+| [Cursor](./src/cursor.rs) |  92s 218ms ± 0s 142ms | -52.8% | Reduce the number of I/O operations by loading the file in large chunks into memory |
