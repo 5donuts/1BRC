@@ -26,7 +26,7 @@ This particular table of solutions was run on a system with an AMD Ryzen 7 2700X
 16GiB of memory.
 Additionally, the 'delta' column represents the percentage change of a particular runner compared to the baseline.
 
-| Runner                    | Runtime               | Delta  | Notes                                                                               |
-| ------------------------- | --------------------- | ------ | ----------------------------------------------------------------------------------- |
-| [Naive](./src/naive.rs)   | 195s 179ms ± 6s 423ms | N/A    | Basic implementation; iterate through the file line-by-line                         |
-| [Cursor](./src/cursor.rs) |  92s 218ms ± 0s 142ms | -52.8% | Reduce the number of I/O operations by loading the file in large chunks into memory |
+| Runner                          | Runtime               | Delta  | Notes                                                                               |
+| ------------------------------- | --------------------- | ------ | ----------------------------------------------------------------------------------- |
+| [Baseline](./src/baseline.rs)   | 195s 179ms ± 6s 423ms | N/A    | Basic implementation; iterate through the file line-by-line                         |
+| [Chunks](./src/chunks.rs)       |  92s 218ms ± 0s 142ms | -52.8% | Reduce the number of I/O operations by loading the file in large chunks into memory |

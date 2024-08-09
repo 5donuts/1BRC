@@ -21,19 +21,19 @@ use serde::Serialize;
 
 use helpers::ChallengeRunner;
 
-mod cursor;
+mod chunks;
 mod helpers;
-mod naive;
+mod baseline;
 
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
 enum Runner {
     /// Iterate through the input line-by-line to build min/max/avg data for each station
-    Naive,
+    Baseline,
 
     /// Read the file into memory in a few large chunks instead of many smaller I/O ops
     #[default]
-    Cursor,
+    Chunks,
 }
 
 #[derive(Debug, Parser)]
@@ -81,8 +81,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn run(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Error>> {
     use Runner::*;
     let (station_info, duration) = match runner {
-        Naive => naive::Runner::run(input),
-        Cursor => cursor::Runner::run(input),
+        Baseline => baseline::Runner::run(input),
+        Chunks => chunks::Runner::run(input),
     }?;
 
     // Display the results with wrapping '{ ... }' and ',' between each entry, but
@@ -112,8 +112,8 @@ fn benchmark(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Err
             use Runner::*;
             // Discard the station info b/c we only care about the time it took to compute
             match runner {
-                Naive => naive::Runner::run(input),
-                Cursor => cursor::Runner::run(input),
+                Baseline => baseline::Runner::run(input),
+                Chunks => chunks::Runner::run(input),
             }
             .and_then(|(_, duration)| {
                 println!("Run {i}: {}", fmt_duration(&duration));
