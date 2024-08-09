@@ -49,7 +49,7 @@ See the GNU General Public License for more details. You should have received a 
 GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>."#
 )]
 struct Args {
-    /// The name of the runner to use to solve the challenge.
+    /// The runner to use to solve the challenge
     #[clap(short, long, default_value_t, value_enum)]
     runner: Runner,
 

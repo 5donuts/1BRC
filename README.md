@@ -12,7 +12,7 @@ $ nix run .#create-measurements -- 1_000_000_000 # you can specify smaller input
 
 You can run my solutions with:
 ```
-$ nix run . -- -r runner-name ./measurements.txt
+$ nix run . -- -r runner ./measurements.txt
 
 # For additional information, run:
 $ nix run . -- --help
