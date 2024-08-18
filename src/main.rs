@@ -73,29 +73,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.bench {
         benchmark(runner, input)
     } else {
-        run(runner, input)
+        run(runner, input, true).and_then(|_| Ok(()))
     }
 }
 
-/// Run the selected [`Runner`] against the provided input
-fn run(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Error>> {
+/// Run the selected [`Runner`] against the provided input.
+/// If `print_output = true`, print the result to stdout.
+/// Return the duration it took to compute the result.
+fn run(
+    runner: Runner,
+    input: &Path,
+    print_output: bool,
+) -> Result<Duration, Box<dyn std::error::Error>> {
     use Runner::*;
     let (station_info, duration) = match runner {
         Baseline => baseline::Runner::run(input),
         Chunks => chunks::Runner::run(input),
     }?;
 
-    // Display the results with wrapping '{ ... }' and ',' between each entry, but
-    // not following the last entry.
-    print!("{{");
-    for i in 0..(station_info.len() - 1) {
-        print!("{}", station_info[i]);
-        print!(", ");
+    if print_output {
+        // Display the results with wrapping '{ ... }' and ',' between each entry, but
+        // not following the last entry.
+        print!("{{");
+        for i in 0..(station_info.len() - 1) {
+            print!("{}", station_info[i]);
+            print!(", ");
+        }
+        println!("{}}}\n", station_info.iter().last().unwrap());
+        println!("Solved in {}", fmt_duration(&duration));
     }
-    println!("{}}}\n", station_info.iter().last().unwrap());
-    println!("Solved in {}", fmt_duration(&duration));
 
-    Ok(())
+    Ok(duration)
 }
 
 /// Benchmark the selected [`Runner`] using the provided input
@@ -109,13 +117,7 @@ fn benchmark(runner: Runner, input: &Path) -> Result<(), Box<dyn std::error::Err
     let durations: Result<Vec<Duration>, _> = (1..=5)
         .into_iter()
         .map(|i| {
-            use Runner::*;
-            // Discard the station info b/c we only care about the time it took to compute
-            match runner {
-                Baseline => baseline::Runner::run(input),
-                Chunks => chunks::Runner::run(input),
-            }
-            .and_then(|(_, duration)| {
+            run(runner, input, false).and_then(|duration| {
                 println!("Run {i}: {}", fmt_duration(&duration));
                 Ok(duration)
             })
