@@ -27,7 +27,7 @@ pub struct Runner;
 ///
 /// This value was chosen arbitrarily, but four seems to have better performance than two, at least
 /// on the test system
-const NUM_CHUNKS: usize = 4;
+const NUM_CHUNKS: usize = 3;
 
 struct StationData {
     min: f32,
