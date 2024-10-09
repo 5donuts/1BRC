@@ -76,7 +76,7 @@ impl ChallengeRunner for Runner {
         let bytes_per_step = (file_bytes as f32 / NUM_CHUNKS as f32).floor() as usize;
 
         // Read the file in a few large chunks, process each chunk using the same technique as in
-        // src/naive.rs
+        // src/baseline.rs
         let mut map: HashMap<String, StationData> = HashMap::new();
         let mut f = File::open(input)?;
         for _ in 0..NUM_CHUNKS {
@@ -111,7 +111,7 @@ impl ChallengeRunner for Runner {
                 }?,
             };
 
-            // Process the lines in the chunk using the same technique as src/naive.rs
+            // Process the lines in the chunk using the same technique as src/baseline.rs
             for line in Cursor::new(buf).lines() {
                 let line = line?;
                 let mut parts = line.split(';');
