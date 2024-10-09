@@ -21,9 +21,9 @@ use serde::Serialize;
 
 use helpers::ChallengeRunner;
 
+mod baseline;
 mod chunks;
 mod helpers;
-mod baseline;
 
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
