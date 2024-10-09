@@ -28,7 +28,7 @@ mod baseline;
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
 enum Runner {
-    /// Iterate through the input line-by-line to build min/max/avg data for each station
+    /// Iterate through the input line-by-line
     Baseline,
 
     /// Read the file into memory in a few large chunks instead of many smaller I/O ops
