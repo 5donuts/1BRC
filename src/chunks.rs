@@ -19,7 +19,7 @@ use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::time::Instant;
 
-use crate::helpers::*;
+use crate::utils::helpers::*;
 
 pub struct Runner;
 

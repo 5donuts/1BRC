@@ -19,11 +19,11 @@ use std::time::Duration;
 use clap::Parser;
 use serde::Serialize;
 
-use helpers::ChallengeRunner;
+use utils::helpers::ChallengeRunner;
 
 mod baseline;
 mod chunks;
-mod helpers;
+mod utils;
 
 #[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
