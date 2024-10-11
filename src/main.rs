@@ -24,16 +24,20 @@ use helpers::ChallengeRunner;
 mod baseline;
 mod chunks;
 mod helpers;
+mod parallel_chunks;
 
-#[derive(Debug, Default, Clone, Serialize, clap::ValueEnum)]
+#[derive(Debug, Default, Clone, Copy, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
 enum Runner {
     /// Iterate through the input line-by-line
     Baseline,
 
     /// Read the file into memory in a few large chunks instead of many smaller I/O ops
-    #[default]
     Chunks,
+
+    /// [Chunks], but multithreaded
+    #[default]
+    ParallelChunks,
 }
 
 #[derive(Debug, Parser)]
@@ -89,6 +93,7 @@ fn run(
     let (station_info, duration) = match runner {
         Baseline => baseline::Runner::run(input),
         Chunks => chunks::Runner::run(input),
+        ParallelChunks => parallel_chunks::Runner::run(input),
     }?;
 
     if print_output {
