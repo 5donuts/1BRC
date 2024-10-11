@@ -18,9 +18,10 @@ use std::fs::File;
 use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::time::Instant;
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread;
 
 use crate::helpers::*;
-use super::thread_pool::*;
 
 pub struct Runner;
 
@@ -80,5 +81,61 @@ impl ChallengeRunner for Runner {
         let pool = ThreadPool::new(PARALLEL_CHUNKS);
 
         todo!()
+    }
+}
+
+// --- The following is an implementation of a thread pool from The Book: https://doc.rust-lang.org/book/ch20-02-multithreaded.html --
+
+/// A task for one of the [Worker]s in the [ThreadPool] to execute
+type Job = Box<dyn FnOnce(String) -> HashMap<String, StationData> + Send + 'static>;
+
+pub struct ThreadPool {
+    workers: Vec<Worker>,
+    sender: mpsc::Sender<Job>,
+}
+
+impl ThreadPool {
+    /// Initialize a new thread pool with `size` number of workers
+    ///
+    /// # Panics
+    ///
+    /// The `new` function will panic if the number of workers is zero
+    pub fn new(size: usize) -> Self {
+        assert!(size > 0);
+
+        let (sender, receiver) = mpsc::channel();
+        let receiver = Arc::new(Mutex::new(receiver));
+
+        let mut workers = Vec::with_capacity(size);
+
+        for _ in 0..size {
+            workers.push(Worker::new(Arc::clone(&receiver)));
+        }
+
+        Self { workers, sender }
+    }
+
+    /// Use a worker in the pool to execute the given closure
+    pub fn execute<F>(&self, f: F)
+    where
+        F: FnOnce(String) -> HashMap<String, StationData> + Send + 'static,
+    {
+        let job = Box::new(f);
+        self.sender.send(job).unwrap();
+    }
+}
+
+struct Worker {
+    thread: thread::JoinHandle<()>,
+}
+
+impl Worker {
+    fn new(receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Self {
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().unwrap().recv().unwrap();
+            job();
+        });
+
+        Self { thread }
     }
 }
