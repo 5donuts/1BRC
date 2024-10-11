@@ -19,7 +19,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::time::Instant;
 
-use crate::utils::helpers::*;
+use crate::helpers::*;
 
 struct StationData {
     min: f32,
