@@ -98,3 +98,20 @@ impl ChallengeRunner for Runner {
         Ok((stations, duration))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::runners::tests::*;
+    use std::{io, error};
+
+    #[test]
+    fn correctness() -> Result<(), Box<dyn error::Error>> {
+        let input = io::Cursor::new(TEST_DATA.as_bytes());
+
+        let (actual, _) = Runner::run(input)?;
+        assert_eq!(actual, *EXPECTED_RESULT, "actual != expected for baseline runner");
+
+        Ok(())
+    }
+}

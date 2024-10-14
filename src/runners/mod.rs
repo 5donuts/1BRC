@@ -21,15 +21,11 @@ pub use chunks::Runner as Chunks;
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{self, File};
-    use std::io::prelude::*;
-
+    use crate::helpers::*;
     use once_cell::sync::Lazy;
 
-    use crate::helpers::*;
-    use super::*;
-
-    static TEST_DATA: &'static str = r#"Glens Falls;-47.5
+    /// Some test data for runners to use when checking correctness
+    pub static TEST_DATA: &'static str = r#"Glens Falls;-47.5
 Shimanto;30.3
 Zverevo;98.1
 Shimanto;74.9
@@ -42,7 +38,8 @@ Shimanto;20.9
 Glens Falls;6.6
 "#;
 
-    static EXPECTED_RESULT: Lazy<Vec<StationInfo>> = Lazy::new(|| {
+    /// The expected result each runner should return when given [`TEST_DATA`] as input
+    pub static EXPECTED_RESULT: Lazy<Vec<StationInfo>> = Lazy::new(|| {
         vec![
             StationInfo::new(String::from("Aïn el Mediour"), 5.7, 47.6, 26.65),
             StationInfo::new(String::from("Glens Falls"), -47.5, 6.6, -20.45),
@@ -51,24 +48,4 @@ Glens Falls;6.6
             StationInfo::new(String::from("Zverevo"), 87.6, 87.6, 87.6),
         ]
     });
-
-    #[test]
-    fn correctness() -> Result<(), Box<dyn std::error::Error>> {
-        // Write the test data to a file
-        let fname = std::path::Path::new("test.txt");
-        let mut file = File::create(fname)?;
-        write!(file, "{TEST_DATA}")?;
-
-        // Test each runner for correctness with this small set of test data
-        let (actual, _) = Baseline::run(fname)?;
-        assert_eq!(actual, *EXPECTED_RESULT, "Error in baseline runner");
-
-        let (actual, _) = Chunks::run(fname)?;
-        assert_eq!(actual, *EXPECTED_RESULT, "Error in chunks runner");
-
-        // Delete the test file
-        fs::remove_file(fname)?;
-
-        Ok(())
-    }
 }

@@ -156,3 +156,20 @@ fn last_chunk_newline_idx(chunk: &[u8]) -> usize {
         .next()
         .expect("Unable to find any '\\n' in chunk")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::runners::tests::*;
+    use std::{io, error};
+
+    #[test]
+    fn correctness() -> Result<(), Box<dyn error::Error>> {
+        let input = io::Cursor::new(TEST_DATA.as_bytes());
+
+        let (actual, _) = Runner::run(input)?;
+        assert_eq!(actual, *EXPECTED_RESULT, "actual != expected for chunks runner");
+
+        Ok(())
+    }
+}
