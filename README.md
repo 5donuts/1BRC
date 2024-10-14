@@ -9,6 +9,7 @@ script available as a flake output, so you can generate the test input with:
 ```
 $ nix run .#create-measurements -- 1_000_000_000 # you can specify smaller inputs, too
 ```
+Note: the minimum input size for the script is `10_000`. For details, see the [`build_test_data` function](https://github.com/gunnarmorling/1brc/blob/main/src/main/python/create_measurements.py#L108)
 
 You can run my solutions with:
 ```
