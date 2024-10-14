@@ -18,3 +18,32 @@ mod chunks;
 
 pub use baseline::Runner as Baseline;
 pub use chunks::Runner as Chunks;
+
+#[cfg(test)]
+mod tests {
+    use crate::helpers::*;
+    use once_cell::sync::Lazy;
+
+    static TEST_DATA: &'static str = r#"Glens Falls;-47.5
+Shimanto;30.3
+Zverevo;98.1
+Shimanto;74.9
+Zverevo;87.6
+Aïn el Mediour;47.6
+Paidiipalli;91.1
+Shimanto;27.5
+Aïn el Mediour;5.7
+Shimanto;20.9
+Glens Falls;6.6
+"#;
+
+    static EXPECTED_RESULT: Lazy<Vec<StationInfo>> = Lazy::new(|| {
+        vec![
+            StationInfo::new(String::from("Aïn el Mediour"), 5.7, 47.6, 26.65),
+            StationInfo::new(String::from("Glens Falls"), -47.5, 6.6, -20.45),
+            StationInfo::new(String::from("Paidiipalli"), 91.1, 91.1, 91.1),
+            StationInfo::new(String::from("Shimanto"), 20.9, 74.9, 38.4),
+            StationInfo::new(String::from("Zverevo"), 87.6, 87.6, 87.6),
+        ]
+    });
+}
