@@ -32,3 +32,10 @@ Additionally, the 'delta' column represents the percentage change of a particula
 | ------------------------------- | --------------------- | ------ | ----------------------------------------------------------------------------------- |
 | [Baseline](./src/baseline.rs)   | 195s 179ms ± 6s 423ms | N/A    | Basic implementation; iterate through the file line-by-line                         |
 | [Chunks](./src/chunks.rs)       |  69s 971ms ± 0s 094ms | -64.1% | Reduce the number of I/O operations by loading the file in large chunks into memory |
+
+## TO-DOs
+
+- [ ] Use [Bytehound](https://github.com/koute/bytehound) to do some memory profiling?
+- [ ] Do some sort of CPU & disk usage profiling
+- [ ] Get a solution that runs in < 60s
+- [ ] Get a solution that runs in < 10s
