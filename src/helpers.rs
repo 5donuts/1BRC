@@ -15,8 +15,8 @@
 
 use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
 use std::fmt::Display;
-use std::path::Path;
 use std::time::Duration;
+use std::io;
 
 /// A helper type to represent min/max/avg data for a station
 #[derive(Debug)]
@@ -96,5 +96,7 @@ pub trait ChallengeRunner {
     /// A [`Duration`] indicatating how long it took to solve the challenge,
     /// not including the amount of time it took to print the output, or some
     /// error encountered while attempting to solve the challenge.
-    fn run(input: &Path) -> ChallengeResult;
+    fn run<R>(input: R) -> ChallengeResult
+    where
+        R: io::Read + io::Seek;
 }

@@ -85,9 +85,10 @@ fn run(
     print_output: bool,
 ) -> Result<Duration, Box<dyn std::error::Error>> {
     use Runner::*;
+    let f = std::fs::File::open(input)?;
     let (station_info, duration) = match runner {
-        Baseline => runners::Baseline::run(input),
-        Chunks => runners::Chunks::run(input),
+        Baseline => runners::Baseline::run(f),
+        Chunks => runners::Chunks::run(f),
     }?;
 
     if print_output {

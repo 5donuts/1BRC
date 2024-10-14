@@ -14,9 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::collections::HashMap;
-use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::Path;
 use std::time::Instant;
 
 use crate::helpers::*;
@@ -62,15 +60,17 @@ impl StationData {
 pub struct Runner;
 
 impl ChallengeRunner for Runner {
-    fn run(input: &Path) -> ChallengeResult {
+    fn run<R>(input: R) -> ChallengeResult
+    where
+        R: std::io::Read + std::io::Seek,
+    {
         let start = Instant::now();
 
-        // Open the file with a BufReader to reduce the number of file I/O operations we're doing
+        // Open the input with a BufReader to reduce the number of file I/O operations we're doing
         // Then, go through each line in the file & parse out the station data, updating the map
         // of stations as we go.
-        let f = File::open(input)?;
         let mut map: HashMap<String, StationData> = HashMap::new();
-        for line in BufReader::new(f).lines() {
+        for line in BufReader::new(input).lines() {
             let line = line?;
             let mut parts = line.split(';');
             let station = parts.next().unwrap();

@@ -14,9 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::collections::HashMap;
-use std::fs::File;
 use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
-use std::path::Path;
 use std::time::Instant;
 
 use crate::helpers::*;
@@ -65,17 +63,26 @@ impl StationData {
 }
 
 impl ChallengeRunner for Runner {
-    fn run(input: &Path) -> ChallengeResult {
+    fn run<R>(input: R) -> ChallengeResult
+    where
+        R: Read + Seek,
+    {
         let start = Instant::now();
 
-        // Compute the approximate size of each chunk based on the size of the file
-        let file_bytes = File::open(input)?.metadata()?.len();
-        let bytes_per_step = (file_bytes as f32 / NUM_CHUNKS as f32).floor() as usize;
+        let mut input = input;
+
+        // Estimate the number of bytes in each chunk based on the number of bytes in the stream
+        let stream_bytes = {
+            let end_offset = input.seek(SeekFrom::End(0))?;
+            input.rewind()?;
+            end_offset
+        };
+        let bytes_per_step = (stream_bytes as f32 / NUM_CHUNKS as f32).floor() as usize;
 
         // Read the file in a few large chunks, process each chunk using the same technique as in
         // src/baseline.rs
         let mut map: HashMap<String, StationData> = HashMap::new();
-        let mut f = File::open(input)?;
+        let mut f = input;
         for _ in 0..NUM_CHUNKS {
             // Read the next chunk into memory
             let mut buf = vec![0; bytes_per_step];
