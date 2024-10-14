@@ -21,8 +21,13 @@ pub use chunks::Runner as Chunks;
 
 #[cfg(test)]
 mod tests {
-    use crate::helpers::*;
+    use std::fs::{self, File};
+    use std::io::prelude::*;
+
     use once_cell::sync::Lazy;
+
+    use crate::helpers::*;
+    use super::*;
 
     static TEST_DATA: &'static str = r#"Glens Falls;-47.5
 Shimanto;30.3
@@ -46,4 +51,24 @@ Glens Falls;6.6
             StationInfo::new(String::from("Zverevo"), 87.6, 87.6, 87.6),
         ]
     });
+
+    #[test]
+    fn correctness() -> Result<(), Box<dyn std::error::Error>> {
+        // Write the test data to a file
+        let fname = std::path::Path::new("test.txt");
+        let mut file = File::create(fname)?;
+        write!(file, "{TEST_DATA}")?;
+
+        // Test each runner for correctness with this small set of test data
+        let (actual, _) = Baseline::run(fname)?;
+        assert_eq!(actual, *EXPECTED_RESULT, "Error in baseline runner");
+
+        let (actual, _) = Chunks::run(fname)?;
+        assert_eq!(actual, *EXPECTED_RESULT, "Error in chunks runner");
+
+        // Delete the test file
+        fs::remove_file(fname)?;
+
+        Ok(())
+    }
 }
