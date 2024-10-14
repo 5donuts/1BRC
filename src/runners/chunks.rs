@@ -89,6 +89,8 @@ impl ChallengeRunner for Runner {
 
                     // Move the cursor just past the last newline in the chunk so the next chunk
                     // starts at the beginning of a line rather than partway through one.
+                    // TODO: is this even correct? is this really seeking to where I think it is?
+                    // TODO: wirte up some tests for the seeking behavior
                     f.seek(SeekFrom::Current(end_idx as i64))?;
 
                     // Trim the buffer to not include the partial line

@@ -21,9 +21,8 @@ use serde::Serialize;
 
 use helpers::ChallengeRunner;
 
-mod baseline;
-mod chunks;
 mod helpers;
+mod runners;
 
 #[derive(Debug, Default, Clone, Copy, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
@@ -87,8 +86,8 @@ fn run(
 ) -> Result<Duration, Box<dyn std::error::Error>> {
     use Runner::*;
     let (station_info, duration) = match runner {
-        Baseline => baseline::Runner::run(input),
-        Chunks => chunks::Runner::run(input),
+        Baseline => runners::Baseline::run(input),
+        Chunks => runners::Chunks::run(input),
     }?;
 
     if print_output {
