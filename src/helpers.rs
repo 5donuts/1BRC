@@ -15,8 +15,8 @@
 
 use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
 use std::fmt::Display;
-use std::time::Duration;
 use std::io;
+use std::time::Duration;
 
 /// A helper type to represent min/max/avg data for a station
 #[derive(Debug)]
