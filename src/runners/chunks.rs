@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::collections::HashMap;
-use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader, SeekFrom};
 use std::time::Instant;
 
 use crate::helpers::*;
@@ -65,7 +65,7 @@ impl StationData {
 impl ChallengeRunner for Runner {
     fn run<R>(input: R) -> ChallengeResult
     where
-        R: Read + Seek,
+        R: std::io::Read + std::io::Seek,
     {
         let start = Instant::now();
 
@@ -79,55 +79,20 @@ impl ChallengeRunner for Runner {
         };
         let bytes_per_step = (stream_bytes as f32 / NUM_CHUNKS as f32).floor() as usize;
 
-        // Read the file in a few large chunks, process each chunk using the same technique as in
-        // src/baseline.rs
+        // Configure our BufReader to use a larger buffer so we make fewer I/O operations while
+        // reading the file. Otherwise, this approach is identical to the one in src/baseline.rs
         let mut map: HashMap<String, StationData> = HashMap::new();
-        let mut f = input;
-        for _ in 0..NUM_CHUNKS {
-            // Read the next chunk into memory
-            let mut buf = vec![0; bytes_per_step];
-            let buf = match f.read_exact(&mut buf) {
-                // Handle the case that there are enough bytes remaining in the file to fill the
-                // buffer
-                Ok(_) => {
-                    // Find the last newline in the chunk to handle the case that this chunk
-                    // boundary splits a line
-                    let end_idx = last_chunk_newline_idx(&buf);
+        for line in BufReader::with_capacity(bytes_per_step, input).lines() {
+            let line = line?;
+            let mut parts = line.split(';');
+            let station = parts.next().unwrap();
+            let measurement = parts.next().unwrap().parse::<f32>()?;
 
-                    // Move the cursor just past the last newline in the chunk so the next chunk
-                    // starts at the beginning of a line rather than partway through one.
-                    f.seek(SeekFrom::Current(end_idx as i64))?;
-
-                    // Trim the buffer to not include the partial line
-                    &buf[..end_idx]
-                }
-                Err(e) => match e.kind() {
-                    // Handle the case that there are fewer bytes remaining in the file than can be
-                    // held by the buffer
-                    io::ErrorKind::UnexpectedEof => {
-                        // Read the remaining bytes in the file then trim the slice to only the
-                        // bytes that were just read
-                        let bytes_read = f.read_to_end(&mut buf)?;
-                        Ok(&buf[..bytes_read])
-                    }
-                    // Bubble up any other error
-                    _ => Err(e),
-                }?,
-            };
-
-            // Process the lines in the chunk using the same technique as src/baseline.rs
-            for line in Cursor::new(buf).lines() {
-                let line = line?;
-                let mut parts = line.split(';');
-                let station = parts.next().unwrap();
-                let measurement = parts.next().unwrap().parse::<f32>()?;
-
-                if let Some(station_data) = map.get_mut(station) {
-                    station_data.push(measurement);
-                } else {
-                    let station_data = StationData::new(measurement);
-                    map.insert(station.to_owned(), station_data);
-                }
+            if let Some(station_data) = map.get_mut(station) {
+                station_data.push(measurement);
+            } else {
+                let station_data = StationData::new(measurement);
+                map.insert(station.to_owned(), station_data);
             }
         }
 
@@ -144,17 +109,6 @@ impl ChallengeRunner for Runner {
 
         Ok((stations, duration))
     }
-}
-
-/// Return the index of the last '\n' in the chunk
-fn last_chunk_newline_idx(chunk: &[u8]) -> usize {
-    chunk
-        .iter()
-        .enumerate()
-        .rev()
-        .filter_map(|(idx, c)| if *c == b'\n' { Some(idx) } else { None })
-        .next()
-        .expect("Unable to find any '\\n' in chunk")
 }
 
 #[cfg(test)]
