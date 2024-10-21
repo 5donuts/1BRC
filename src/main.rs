@@ -24,15 +24,21 @@ use helpers::ChallengeRunner;
 mod helpers;
 mod runners;
 
+// TODO: add a debug command that shows how a particular station's data (the first one read)
+// changes over time. For some reason a lot of stations have weirdly similar data that I'm not sure
+// is backed up by the acutal input...
+
+// TODO: start benchmarking disk usage, memory usage, CPU usage for the blog post
+
 #[derive(Debug, Default, Clone, Copy, Serialize, clap::ValueEnum)]
 #[serde(rename_all = "kebab-case")]
 enum Runner {
     /// Iterate through the input line-by-line
     Baseline,
 
-    /// Read the file into memory in a few large chunks instead of many smaller I/O ops
+    /// Use the same approach as [Baseline], but use a larger buffer to read the input
     #[default]
-    Chunks,
+    BigBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -88,7 +94,7 @@ fn run(
     let f = std::fs::File::open(input)?;
     let (station_info, duration) = match runner {
         Baseline => runners::Baseline::run(f),
-        Chunks => runners::Chunks::run(f),
+        BigBuf => runners::BigBuf::run(f),
     }?;
 
     if print_output {
