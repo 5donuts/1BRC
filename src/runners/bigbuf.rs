@@ -69,9 +69,8 @@ impl ChallengeRunner for Runner {
     {
         let start = Instant::now();
 
-        let mut input = input;
-
         // Estimate the number of bytes in each chunk based on the number of bytes in the stream
+        let mut input = input;
         let stream_bytes = {
             let end_offset = input.seek(SeekFrom::End(0))?;
             input.rewind()?;
