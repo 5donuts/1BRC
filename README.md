@@ -12,12 +12,12 @@ $ nix run .#create-measurements -- 1_000_000_000 # you can specify smaller input
 Note: the minimum input size for the script is `10_000`.
 For details, see the [`build_test_data` function](https://github.com/gunnarmorling/1brc/blob/main/src/main/python/create_measurements.py#L108)
 
-You can run my solutions with:
+You detailed instructions on how to run these solutions, see the help text with:
 ```
-$ nix run . -- -r <runner> ./measurements.txt
-
-# For additional information, run:
 $ nix run . -- --help
+
+# Or, if you don't have Nix:
+$ cargo run -- --help
 ```
 
 ## Results
