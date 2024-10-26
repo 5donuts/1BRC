@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Cursor};
 use std::time::Instant;
 
 use crate::helpers::*;
@@ -69,21 +69,62 @@ impl ChallengeRunner for Runner {
     {
         let start = Instant::now();
 
-        // Configure our BufReader to use a larger buffer so we make fewer I/O operations while
-        // reading the file. Otherwise, this approach is identical to the one in src/baseline.rs
         let mut map: HashMap<String, StationData> = HashMap::new();
-        for line in BufReader::with_capacity(BUFFER_SIZE, input).lines() {
-            let line = line?;
-            let mut parts = line.split(';');
-            let station = parts.next().unwrap();
-            let measurement = parts.next().unwrap().parse::<f32>()?;
+        let mut reader = BufReader::with_capacity(BUFFER_SIZE, input);
+        let mut prev_partial_line: Option<Vec<u8>> = None;
+        loop {
+            // Fill the reader's internal buffer, grab those bytes, and mark them as read
+            let buf = reader.fill_buf()?.to_owned();
+            reader.consume(buf.len());
 
-            if let Some(station_data) = map.get_mut(station) {
-                station_data.push(measurement);
-            } else {
-                let station_data = StationData::new(measurement);
-                map.insert(station.to_owned(), station_data);
+            // If no bytes were read, we've reached the end of the input stream. Even if there was
+            // a partial line to process, there is no additional data in the input stream to be
+            // able to fill it out, thus we must exit the loop.
+            if buf.len() == 0 {
+                break;
             }
+
+            // Split the contents of the buffer into full lines and the remaining partial line
+            let (full_lines, partial_line) = get_measurement_lines(&buf);
+
+            // If there was a previous partial line read from the input, prepend that to the full
+            // lines we just read. Then, save the new partial line for the next iteration.
+            let lines_to_process: &[u8] = if let Some(partial_line) = prev_partial_line {
+                &[partial_line.as_slice(), full_lines].concat()
+            } else {
+                full_lines
+            };
+            prev_partial_line = if partial_line.len() > 0 {
+                Some(partial_line.to_owned())
+            } else {
+                None
+            };
+
+            // Process the station measurements from the current set of complete lines of input.
+            for line in Cursor::new(lines_to_process).lines() {
+                let line = line?;
+                let mut parts = line.split(';');
+                let station = parts.next().unwrap();
+                let measurement = parts.next().unwrap().parse::<f32>()?;
+
+                if let Some(station_data) = map.get_mut(station) {
+                    station_data.push(measurement);
+                } else {
+                    let station_data = StationData::new(measurement);
+                    map.insert(station.to_owned(), station_data);
+                }
+            }
+        }
+
+        // If we've exited the loop, the input stream is exhausted. If for some reason there is
+        // still a partial line remaining, then the data required to fill it out was not present in
+        // the input. Thus, we must raise an error.
+        if let Some(line) = prev_partial_line {
+            return Err(format!(
+                "Input exhausted but a partial line remains: '{}",
+                std::str::from_utf8(&line).unwrap()
+            )
+            .into());
         }
 
         // Build the alphabetically-sorted list of stations
