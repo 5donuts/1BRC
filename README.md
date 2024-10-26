@@ -26,7 +26,8 @@ Much like the official competition, results are taken by running each solution f
 discarding the highest & lowest results.
 This particular table of solutions was run on a system with an AMD Ryzen 7 2700X processor and
 16GiB of memory.
-Additionally, the 'delta' column represents the percentage change of a particular runner compared to the baseline.
+Additionally, the 'delta' column represents the percentage change of a particular runner compared
+to the baseline.
 
 | Runner                          | Runtime               | Delta  | Notes                                                                               |
 | ------------------------------- | --------------------- | ------ | ----------------------------------------------------------- |
