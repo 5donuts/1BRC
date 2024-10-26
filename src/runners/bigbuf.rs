@@ -101,6 +101,60 @@ impl ChallengeRunner for Runner {
     }
 }
 
+/// Function to read the contents of a buffer containing data read from the input source and
+/// split that data into two slices:
+/// 1. a slice containing only complete lines from the input source
+/// 2. a slice containing a partial line from the input source
+///
+/// This way, we can use [`BufRead::consume`] to mark all data in the buffer as read and load
+/// new data from the input source while still preserving the partial input read from the
+/// initial call to [`BufRead::fill_buf`].
+///
+/// The idea here is that it's possible that we stop reading data before we've read a complete
+/// line from the input source and we don't want to attempt to process that data until we have
+/// the rest of that line.
+///
+/// # Assumptions
+/// This function assumes that `input` is non-empty and will panic otherwise.
+///
+/// # Returns
+/// A tuple containing two slices:
+/// 1. a slice containing only complete lines from the input source
+/// 2. a slice containing a partial line from the input source
+///
+/// If there are no partial lines from the input source, the second slice will be empty and the
+/// first will contain the entirety of the `input`.
+///
+/// If there are no newlines in the input source, the first slice will be empty and the second
+/// will contain the entirety of the `input`.
+fn get_measurement_lines(input: &[u8]) -> (&[u8], &[u8]) {
+    // Get the index of the last newline byte in the input.
+    // All bytes up to and including this point are 'full' lines.
+    // All bytes after this point are 'partial' lines.
+    // If there are no '\n' bytes in the input, then the entire input must be a partial line
+    if let Some(last_newline_idx) = input
+        .iter()
+        .enumerate()
+        .rev()
+        .filter_map(|(idx, c)| if *c == b'\n' { Some(idx) } else { None })
+        .next()
+    {
+        let full_lines = &input[..=last_newline_idx];
+        let partial_lines = if last_newline_idx == input.len() {
+            &[]
+        } else {
+            &input[last_newline_idx + 1..]
+        };
+
+        (full_lines, partial_lines)
+    } else {
+        let full_lines = &[];
+        let partial_lines = &input;
+
+        (full_lines, partial_lines)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -118,5 +172,107 @@ mod tests {
         );
 
         Ok(())
+    }
+
+    /// Tests for the [`get_measurement_lines`] function
+    mod get_measurement_lines {
+        use super::*;
+
+        #[test]
+        fn only_full_lines() {
+            let input = r#"Eslohe;6.6
+Anta;-98.3
+Okegawa;-45.1
+General Pinedo;-67.7
+Cavarzere;5.0
+Pongoz;38.9
+Douglasville;43.5
+Vinjam;-51.1
+Singalāndāpuram;72.1
+Erandio;74.8
+"#;
+            let input = input.as_bytes();
+
+            let expected_full_lines = r#"Eslohe;6.6
+Anta;-98.3
+Okegawa;-45.1
+General Pinedo;-67.7
+Cavarzere;5.0
+Pongoz;38.9
+Douglasville;43.5
+Vinjam;-51.1
+Singalāndāpuram;72.1
+Erandio;74.8
+"#;
+            let expected_full_lines = expected_full_lines.as_bytes();
+            let expected_partial_lines: &[u8] = &[];
+
+            let (actual_full_lines, actual_partial_lines) = get_measurement_lines(input);
+            assert_eq!(
+                expected_full_lines, actual_full_lines,
+                "Full lines: expected != actual"
+            );
+            assert_eq!(
+                expected_partial_lines, actual_partial_lines,
+                "Partial lines: expected != actual"
+            );
+        }
+
+        #[test]
+        fn only_partial_line() {
+            let input = r#"Eslohe;"#;
+            let input = input.as_bytes();
+
+            let expected_full_lines: &[u8] = &[];
+            let expected_partial_lines = b"Eslohe;";
+
+            let (actual_full_lines, actual_partial_lines) = get_measurement_lines(input);
+            assert_eq!(
+                expected_full_lines, actual_full_lines,
+                "Full lines: expected != actual"
+            );
+            assert_eq!(
+                expected_partial_lines, actual_partial_lines,
+                "Partial lines: expected != actual"
+            );
+        }
+
+        #[test]
+        fn full_and_partial_lines() {
+            let input = r#"Eslohe;6.6
+Anta;-98.3
+Okegawa;-45.1
+General Pinedo;-67.7
+Cavarzere;5.0
+Pongoz;38.9
+Douglasville;43.5
+Vinjam;-51.1
+Singalāndāpuram;"#;
+            let input = input.as_bytes();
+
+            let expected_full_lines = r#"Eslohe;6.6
+Anta;-98.3
+Okegawa;-45.1
+General Pinedo;-67.7
+Cavarzere;5.0
+Pongoz;38.9
+Douglasville;43.5
+Vinjam;-51.1
+"#;
+            let expected_full_lines = expected_full_lines.as_bytes();
+
+            let expected_partial_lines = r#"Singalāndāpuram;"#;
+            let expected_partial_lines = expected_partial_lines.as_bytes();
+
+            let (actual_full_lines, actual_partial_lines) = get_measurement_lines(input);
+            assert_eq!(
+                expected_full_lines, actual_full_lines,
+                "Full lines: expected != actual"
+            );
+            assert_eq!(
+                expected_partial_lines, actual_partial_lines,
+                "Partial lines: expected != actual"
+            );
+        }
     }
 }
