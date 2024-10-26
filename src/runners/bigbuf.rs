@@ -14,15 +14,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader, SeekFrom};
+use std::io::{BufRead, BufReader};
 use std::time::Instant;
 
 use crate::helpers::*;
 
 pub struct Runner;
 
-/// Number of chunks into which to split the file when reading it into memory
-const NUM_CHUNKS: usize = 3;
+/// The size of the buffer (in bytes) to use while reading the input
+const BUFFER_SIZE: usize = 8_589_934_592; // 8 GiB
 
 struct StationData {
     min: f32,
@@ -69,19 +69,10 @@ impl ChallengeRunner for Runner {
     {
         let start = Instant::now();
 
-        // Estimate the number of bytes in each chunk based on the number of bytes in the stream
-        let mut input = input;
-        let stream_bytes = {
-            let end_offset = input.seek(SeekFrom::End(0))?;
-            input.rewind()?;
-            end_offset
-        };
-        let bytes_per_step = (stream_bytes as f32 / NUM_CHUNKS as f32).floor() as usize;
-
         // Configure our BufReader to use a larger buffer so we make fewer I/O operations while
         // reading the file. Otherwise, this approach is identical to the one in src/baseline.rs
         let mut map: HashMap<String, StationData> = HashMap::new();
-        for line in BufReader::with_capacity(bytes_per_step, input).lines() {
+        for line in BufReader::with_capacity(BUFFER_SIZE, input).lines() {
             let line = line?;
             let mut parts = line.split(';');
             let station = parts.next().unwrap();

@@ -36,7 +36,7 @@ enum Runner {
     /// Iterate through the input line-by-line
     Baseline,
 
-    /// Use the same approach as [Baseline], but use a larger buffer to read the input
+    /// Use the same approach as baseline, but with a larger buffer when reading the input
     #[default]
     BigBuf,
 }

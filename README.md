@@ -29,9 +29,9 @@ This particular table of solutions was run on a system with an AMD Ryzen 7 2700X
 Additionally, the 'delta' column represents the percentage change of a particular runner compared to the baseline.
 
 | Runner                          | Runtime               | Delta  | Notes                                                                               |
-| ------------------------------- | --------------------- | ------ | ----------------------------------------------------------------------------------- |
-| [Baseline](./src/baseline.rs)   | 195s 179ms ± 6s 423ms | N/A    | Basic implementation; iterate through the file line-by-line                         |
-| [Chunks](./src/chunks.rs)       |  69s 971ms ± 0s 094ms | -64.1% | Reduce the number of I/O operations by loading the file in large chunks into memory |
+| ------------------------------- | --------------------- | ------ | ----------------------------------------------------------- |
+| [Baseline](./src/baseline.rs)   | 178s 985ms ± 0s 041ms | N/A    | Basic implementation; iterate through the file line-by-line |
+| [BigBuf](./src/bigbuf.rs)       | 187s 849ms ± 0s 186ms | +4.95% | Use a larger `BufReader` buffer size                        |
 
 ## TO-DOs
 
