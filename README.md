@@ -29,10 +29,10 @@ This particular table of solutions was run on a system with an AMD Ryzen 7 2700X
 Additionally, the 'delta' column represents the percentage change of a particular runner compared
 to the baseline.
 
-| Runner                          | Runtime               | Delta  | Notes                                                                               |
-| ------------------------------- | --------------------- | ------ | ----------------------------------------------------------- |
-| [Baseline](./src/baseline.rs)   | 178s 985ms ± 0s 041ms | N/A    | Basic implementation; iterate through the file line-by-line |
-| [BigBuf](./src/bigbuf.rs)       | 187s 849ms ± 0s 186ms | +4.95% | Use a larger `BufReader` buffer size                        |
+| Runner                                  | Runtime               | Delta  | Notes                                                                               |
+| --------------------------------------- | --------------------- | ------ | ----------------------------------------------------------- |
+| [Baseline](./src/runners/baseline.rs)   | 178s 985ms ± 0s 041ms | N/A    | Basic implementation; iterate through the file line-by-line |
+| [BigBuf](./src/runners/bigbuf.rs)       | 187s 849ms ± 0s 186ms | +4.95% | Use a larger `BufReader` buffer size                        |
 
 ## TO-DOs
 
