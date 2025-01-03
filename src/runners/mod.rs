@@ -15,9 +15,11 @@
 
 mod baseline;
 mod rustc_hash;
+mod ahash;
 
 pub use baseline::Runner as Baseline;
 pub use rustc_hash::Runner as RustcHash;
+pub use ahash::Runner as AHash;
 
 #[cfg(test)]
 mod tests {
