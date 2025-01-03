@@ -34,11 +34,9 @@ mod runners;
 #[serde(rename_all = "kebab-case")]
 enum Runner {
     /// Iterate through the input line-by-line
+    #[default]
     Baseline,
 
-    /// Use the same approach as baseline, but with a larger buffer when reading the input
-    #[default]
-    BigBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -94,7 +92,6 @@ fn run(
     let f = std::fs::File::open(input)?;
     let (station_info, duration) = match runner {
         Baseline => runners::Baseline::run(f),
-        BigBuf => runners::BigBuf::run(f),
     }?;
 
     if print_output {

@@ -14,10 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 mod baseline;
-mod bigbuf;
 
 pub use baseline::Runner as Baseline;
-pub use bigbuf::Runner as BigBuf;
 
 #[cfg(test)]
 mod tests {
