@@ -14,8 +14,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 mod baseline;
+mod rustc_hash;
 
 pub use baseline::Runner as Baseline;
+pub use rustc_hash::Runner as RustcHash;
 
 #[cfg(test)]
 mod tests {

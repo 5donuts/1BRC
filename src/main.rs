@@ -34,9 +34,15 @@ mod runners;
 #[serde(rename_all = "kebab-case")]
 enum Runner {
     /// Iterate through the input line-by-line
-    #[default]
     Baseline,
 
+    /// Use the same approach as `baseline` with the `FxHasher` from the `rustc-hash` crate.
+    ///
+    /// This hashing algorithm has a number of speed improvements over the hasher used by the
+    /// standard library, but is not as robust a hasher. For this use case, that's an acceptable
+    /// trade-off to make.
+    #[default]
+    RustcHash,
 }
 
 #[derive(Debug, Parser)]
@@ -92,6 +98,7 @@ fn run(
     let f = std::fs::File::open(input)?;
     let (station_info, duration) = match runner {
         Baseline => runners::Baseline::run(f),
+        RustcHash => runners::RustcHash::run(f),
     }?;
 
     if print_output {
