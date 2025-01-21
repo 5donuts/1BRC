@@ -64,7 +64,7 @@
         };
 
         # Run the create_measurements.py script with `nix run .#create-measurements -- <args>`
-        create-measurements = pkgs.stdenv.mkDerivation {
+        create-measurements = pkgs.stdenvNoCC.mkDerivation {
           name = "create-measurements";
 
           # See: https://serverfault.com/a/1049157
