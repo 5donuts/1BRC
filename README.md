@@ -1,5 +1,7 @@
 # 1BRC
 
+**:warning: This repository has moved to https://codeberg.org/5donuts/1brc**
+
 My take on the [1 Billion Row Challenge](https://1brc.dev/) in Rust.
 
 ## Usage
